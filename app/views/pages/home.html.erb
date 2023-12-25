@@ -1,2 +1,60 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<div class="container mb-3 border border-black col-6 px-5">
+  <div class="" style="height: 140px; width: 100%; border-bottom: 1px solid black; display: flex; align-items: center; justify-content: space-between;">
+    <div style="font-size: 48px; font-weight: bold;">PANDO2</div>
+  </div>
+  <div style="height: 20px; width: 100%;">
+    <div class="mt-3" style="display: flex; justify-content: space-between;">
+      <div>Filtres</div>
+      <div style="border: 1px solid black; padding: 10px;">Room</div>
+      <div style="border: 1px solid black; padding: 10px;">Paramètre</div>
+    </div>
+  </div>
+  <div class="mt-5" style="height: 50px; width: 100%;">
+    <div class="mt-5" style="display: flex; justify-content: space-between;">
+      <div>.</div>
+      <div style="font-size: 8px;">Représente la liste des salles présentent dans le fixhier csv</div>
+      <div style="font-size: 8px;"><%= raw 'Représente la liste des paramètres (voct, co2...)' %></div>
+    </div>
+  </div>
+  <% @measure_types.each do |measure_type| %>
+    <div class="mb-3">
+      <h3><%= measure_type %></h3>
+      <div id="<%= measure_type %>_chart"></div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var <%= measure_type %>_data = <%= @measurements.where(measure_type: measure_type, timestamp: DateTime.new(2021, 11, 1, 0, 0, 0)..DateTime.new(2021, 11, 1, 23, 59, 59)).group_by(&:room_name).map { |room_name, data| { name: room_name, data: data.map { |d| [d.timestamp.to_time.to_i * 1000, d.measure_float] } } }.to_json.html_safe %>;
+
+          var <%= measure_type %>_options = {
+            chart: {
+              type: 'line',
+            },
+            series: <%= measure_type %>_data,
+            xaxis: {
+              type: 'datetime',
+              axisTicks: {
+                color: '#000000',
+              },
+              axisBorder: {
+                color: '#000000',
+              },
+            },
+            yaxis: {
+              title: {
+                text: 'measure_float',
+              },
+              yaxisTicks: {
+                color: '#000000',
+              },
+              yaxisBorder: {
+                color: '#000000',
+              },
+            },
+          };
+
+          var <%= measure_type %>_chart = new ApexCharts(document.querySelector("#<%= measure_type %>_chart"), <%= measure_type %>_options);
+          <%= measure_type %>_chart.render();
+        });
+      </script>
+    </div>
+  <% end %>
+</div>
